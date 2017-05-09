@@ -101,21 +101,18 @@ namespace Ants
                     //checking if the process from beginning increased more than the percentage
                     if((float)(tmp2.WorkingSet64)*(Increase+1)<(float)(tmp1.WorkingSet64))
                     {
-                        adding.Proc = tmp1;
-                        adding.Message = "percentage_from_start_error";
-                        adding = adding.Next;
+                        adding.add(tmp1,"percentage_from_start_error");
                     }
                 }
 
                 //checking if the process uses more than the percentage allowed in RAM
                 if ((float)(tmp1.WorkingSet64) > (float)(Ram.TotMemory) * Ram.Percentage)
                 {
-                    adding.Proc = tmp1;
-                    adding.Message = "percentage_from_total_ram_error";
-                    adding = adding.Next;
+                    adding.add(tmp1,"percentage_from_total_ram_error");
                 }
-
                 tmp2 = null;
+
+
             }
         }
     }
