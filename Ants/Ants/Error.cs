@@ -47,7 +47,6 @@ namespace Ants
         {
             Proc = pr;
             Message = m;
-            this = this.Next;
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Ants
 {
     class Processo
     {
+        #region Creation of Variables and Properties
         //Processes Before and Now
         private Process[] mStart;
         private Process[] mNow;
@@ -24,11 +25,21 @@ namespace Ants
         //Timer to do the checking each X milliseconds
         private Timer mChecking;
 
+        //connection established
+        private Process cmd;
+        private ProcessStartInfo startInfo;
+
         //Initializing
         public Processo()
         {
             Start = Process.GetProcesses();
             Now = Start;
+            cmd=new Process();
+            startInfo = new ProcessStartInfo();
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = "netstat -ao";
+            cmd.StartInfo = startInfo;
             Ram = new RAMUsage();
             Increase = 1000;
             mChecking = new Timer(2000);
@@ -73,6 +84,9 @@ namespace Ants
             set { mChecking.Interval = value; }
         }
 
+        #endregion
+
+        #region Functions
         //Function used for checking
         private void RAMCheck(object a, ElapsedEventArgs e)
         {
@@ -87,6 +101,8 @@ namespace Ants
             Start = Now;
             Now = Process.GetProcesses();
 
+
+            #region RAM Checking
             //Declaring processes tmp
             Process tmp1, tmp2 = null;
 
@@ -102,6 +118,7 @@ namespace Ants
                     if((float)(tmp2.WorkingSet64)*(Increase+1)<(float)(tmp1.WorkingSet64))
                     {
                         adding.add(tmp1,"percentage_from_start_error");
+                        
                     }
                 }
 
@@ -111,9 +128,19 @@ namespace Ants
                     adding.add(tmp1,"percentage_from_total_ram_error");
                 }
                 tmp2 = null;
-
-
             }
+            #endregion
+
+
+            #region Connection Checking
+            cmd.Start();
+            String data = cmd.StandardOutput.ReadToEnd();
+            cmd.WaitForExit();
+
+            //salvare in lista di più stringhe per poi fare il checking
+
+            #endregion
         }
+        #endregion
     }
 }
