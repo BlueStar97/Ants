@@ -1,0 +1,5 @@
+<!ELEMENT sockets (addresses,ports)>
+<!ELEMENT addresses (ip)>
+<!ELEMENT ip (#PCDATA)>
+<!ELEMENT ports (port)>
+<!ELEMENT port (#PCDATA)>
