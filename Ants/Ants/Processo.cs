@@ -31,8 +31,10 @@ namespace Ants
             Now = Start;
             Ram = new RAMUsage();
             Increase = 1000;
-            mChecking.Elapsed += RAMCheck;
             mChecking = new Timer(2000);
+            mChecking.Elapsed += RAMCheck;
+            mChecking.AutoReset = true;
+            mChecking.Start();
         }
 
         //Properties
@@ -74,6 +76,10 @@ namespace Ants
         //Function used for checking
         private void RAMCheck(object a, ElapsedEventArgs e)
         {
+            //Declaring error list and adding for adding new errors
+            Error List = new Error();
+            Error adding = List;
+
             //Using Garbage collector to wipe unused data
             GC.Collect();
 
@@ -83,10 +89,6 @@ namespace Ants
 
             //Declaring processes tmp
             Process tmp1, tmp2 = null;
-
-            //Declaring error list and adding for adding new errors
-            Error List = new Error();
-            Error adding = List;
 
             for (int i = 0; i < Now.Length; i++)
             {
@@ -115,8 +117,6 @@ namespace Ants
 
                 tmp2 = null;
             }
-            mChecking.Interval = 2000;
         }
-
     }
 }

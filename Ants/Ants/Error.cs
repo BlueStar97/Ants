@@ -42,5 +42,12 @@ namespace Ants
             get { return mNext; }
             set { mNext = value; }
         }
+
+        public void add(Process pr, String m)
+        {
+            Proc = pr;
+            Message = m;
+            this = this.Next;
+        }
     }
 }
