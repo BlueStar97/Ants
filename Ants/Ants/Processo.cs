@@ -34,16 +34,22 @@ namespace Ants
         {
             Start = Process.GetProcesses();
             Now = Start;
-            cmd=new Process();
+
+            #region cmd for getting connections
+            cmd =new Process();
             startInfo = new ProcessStartInfo();
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = "netstat -ao";
+            startInfo.Arguments = "/C netstat -ao";
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = true;
             cmd.StartInfo = startInfo;
+            #endregion
+            
             Ram = new RAMUsage();
             Increase = 1000;
             mChecking = new Timer(2000);
-            mChecking.Elapsed += RAMCheck;
+            mChecking.Elapsed += Checks;
             mChecking.AutoReset = true;
             mChecking.Start();
         }
@@ -88,11 +94,15 @@ namespace Ants
 
         #region Functions
         //Function used for checking
-        private void RAMCheck(object a, ElapsedEventArgs e)
+        private void Checks(object a, ElapsedEventArgs e)
         {
             //Declaring error list and adding for adding new errors
             Error List = new Error();
             Error adding = List;
+
+            //Creating the list of connections
+            Conn connect = new Conn();
+            Conn addConn = connect;
 
             //Using Garbage collector to wipe unused data
             GC.Collect();
@@ -136,6 +146,19 @@ namespace Ants
             cmd.Start();
             String data = cmd.StandardOutput.ReadToEnd();
             cmd.WaitForExit();
+
+            String[] rows = data.Split('\n');
+            String[] tmp3, sock;
+
+            for (int i = 4; i < rows.Length+4; i++)
+            {
+                tmp3 = rows[i].Split(' ');
+                addConn.IdProc = int.Parse(tmp3[4]);
+                sock = tmp3[2].Split(':');
+                addConn.IP = sock[0];
+                addConn.Port = sock[1];
+                addConn = addConn.Next;
+            }
 
             //salvare in lista di più stringhe per poi fare il checking
 
