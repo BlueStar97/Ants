@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Ants
 {
@@ -150,6 +152,9 @@ namespace Ants
             String[] rows = data.Split('\n');
             String[] tmp3, sock;
 
+            List<String> addresses = JsonConvert.DeserializeObject<List<String>>(File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.json"));
+            List<String> ports = JsonConvert.DeserializeObject<List<String>>(File.ReadAllText(Directory.GetCurrentDirectory() + @"\port.json"));
+
             for (int i = 4; i < rows.Length+4; i++)
             {
                 tmp3 = rows[i].Split(' ');
@@ -158,12 +163,19 @@ namespace Ants
                 addConn.IP = sock[0];
                 addConn.Port = sock[1];
                 addConn = addConn.Next;
-            }
+            }            
 
             //salvare in lista di più stringhe per poi fare il checking
 
             #endregion
         }
         #endregion
+
+        /*public void foo()
+        {
+            object l = new object();
+            string s = JsonConvert.SerializeObject(l);
+            object l2 = JsonConvert.DeserializeObject<object>(s);
+        }*/
     }
 }
