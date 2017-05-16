@@ -18,6 +18,9 @@ namespace Ants
         private Process[] mStart;
         private Process[] mNow;
 
+        //download Path
+        private String downloadPath;
+
         //Checking increasing RAM relatively to mStart and mNow
         private float mIncrease;
 
@@ -25,7 +28,7 @@ namespace Ants
         private RAMUsage mRam;
 
         //Timer to do the checking each X milliseconds
-        private Timer mChecking;
+        private Timer mChecking, mDownloads;
 
         //connection established
         private Process cmd;
@@ -36,6 +39,8 @@ namespace Ants
         {
             Start = Process.GetProcesses();
             Now = Start;
+
+            downloadPath = "";
 
             #region cmd for getting connections
             cmd =new Process();
@@ -54,6 +59,10 @@ namespace Ants
             mChecking.Elapsed += Checks;
             mChecking.AutoReset = true;
             mChecking.Start();
+            mDownloads = new Timer(360000);
+            mDownloads.Elapsed += newFiles;
+            mDownloads.AutoReset = true;
+            mDownloads.Start();
         }
 
         //Properties
@@ -103,8 +112,7 @@ namespace Ants
             Error adding = List;
 
             //Creating the list of connections
-            Conn connect = new Conn();
-            Conn addConn = connect;
+            String IP = "", Port = "";
 
             //Using Garbage collector to wipe unused data
             GC.Collect();
@@ -155,19 +163,70 @@ namespace Ants
             List<String> addresses = JsonConvert.DeserializeObject<List<String>>(File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.json"));
             List<String> ports = JsonConvert.DeserializeObject<List<String>>(File.ReadAllText(Directory.GetCurrentDirectory() + @"\port.json"));
 
+            bool notFound = true;
+
             for (int i = 4; i < rows.Length+4; i++)
             {
                 tmp3 = rows[i].Split(' ');
-                addConn.IdProc = int.Parse(tmp3[4]);
+                //addConn.IdProc = int.Parse(tmp3[4]);
                 sock = tmp3[2].Split(':');
-                addConn.IP = sock[0];
-                addConn.Port = sock[1];
-                addConn = addConn.Next;
-            }            
+                IP = sock[0];
+                Port = sock[1];
 
-            //salvare in lista di più stringhe per poi fare il checking
+                for (int c = 0; c < addresses.Count; c++)
+                {
+                    if (IP == addresses[c])
+                    {
+                        notFound=true;
+
+                        for (int h = 0; (h < Now.Length) && (notFound); h++)
+                        {
+                            if (Now[h].Id == int.Parse(tmp3[4]))
+                            {
+                                adding.add(Now[h], "IP_address_in_BL");
+                                adding = adding.Next;
+                                notFound = false;
+                            }
+                        }
+                    }
+                }
+
+                for (int c = 0; c < ports.Count; c++)
+                {
+                    if (Port == ports[c])
+                    {
+                        notFound = true;
+
+                        for (int h = 0; (h < Now.Length) && (notFound); h++)
+                        {
+                            if (Now[h].Id == int.Parse(tmp3[4]))
+                            {
+                                adding.add(Now[h], "Port_in_BL");
+                                adding = adding.Next;
+                                notFound = false;
+                            }
+                        }
+                    }
+                }
+            }
 
             #endregion
+
+            //generazione evento per riportare tutti gli errori
+        }
+
+        private void newFiles(object a, ElapsedEventArgs e)
+        {
+            String[] Files = Directory.GetFiles(downloadPath);
+
+            for (int i = 0; i < Files.Length; i++)
+            {
+                if ((File.GetCreationTime(downloadPath + Files[i]).Day == DateTime.Now.Day) && (File.GetCreationTime(downloadPath + Files[i]).Month == DateTime.Now.Month) && (File.GetCreationTime(downloadPath + Files[i]).Year == DateTime.Now.Year))
+                { 
+                    //SHA-256 da applicare
+                    //String hash = 
+                }
+            }
         }
         #endregion
 
