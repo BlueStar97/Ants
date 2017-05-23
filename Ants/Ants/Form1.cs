@@ -15,6 +15,10 @@ namespace Ants
         public Form1()
         {
             InitializeComponent();
+            FolderBrowserDialog src = new FolderBrowserDialog();
+            src.Description = "Seleziona la cartella download predefinita:";
+            src.RootFolder = Environment.SpecialFolder.MyComputer;
+            System.Windows.Forms.MessageBox.Show("My message here");
         }
     }
 }
