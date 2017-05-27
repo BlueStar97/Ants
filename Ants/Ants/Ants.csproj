@@ -58,12 +58,21 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Percentuali.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Percentuali.Designer.cs">
+      <DependentUpon>Percentuali.cs</DependentUpon>
+    </Compile>
     <Compile Include="Processo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RAMUsage.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Percentuali.resx">
+      <DependentUpon>Percentuali.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

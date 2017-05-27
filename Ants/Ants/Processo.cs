@@ -168,7 +168,6 @@ namespace Ants
             for (int i = 4; i < rows.Length+4; i++)
             {
                 tmp3 = rows[i].Split(' ');
-                //addConn.IdProc = int.Parse(tmp3[4]);
                 sock = tmp3[2].Split(':');
                 IP = sock[0];
                 Port = sock[1];
