@@ -123,6 +123,7 @@
             this.Controls.Add(this.textBox1);
             this.Name = "Percentuali";
             this.Text = "Percentuali";
+            this.Load += new System.EventHandler(this.Percentuali_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -35,7 +35,8 @@ namespace Ants
         private ProcessStartInfo startInfo;
 
         //Initializing
-        public Processo()
+        //perc related to ram, incr related to state
+        public Processo(String dPath, float perc, float incr)
         {
             Start = Process.GetProcesses();
             Now = Start;

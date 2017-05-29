@@ -29,6 +29,7 @@ namespace Ants
             {
                 mPerpre = textBox1.Text;
                 mPerram = textBox2.Text;
+                this.Close();
             }
         }
         
@@ -48,6 +49,11 @@ namespace Ants
             {
                 e.Handled = true;
             }
+        }
+
+        private void Percentuali_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -28,6 +28,8 @@ namespace Ants
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            //Download blacklist from server
+
             if (src.ShowDialog() == DialogResult.OK)
                 path = src.SelectedPath;
             else
@@ -35,12 +37,13 @@ namespace Ants
                 System.Windows.Forms.MessageBox.Show("Errore nella selezione del Folder dei Download.");
                 Application.Exit();
             }
-
             Percentuali p = new Percentuali();
             p.ShowDialog(this);
 
             perpre = p.Perpre;
             perram = p.Perram;
+
+            Processo proc = new Processo(path, int.Parse(perram), int.Parse(perpre));
         }
 
 
