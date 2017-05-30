@@ -51,6 +51,7 @@ namespace Ants
             startInfo.Arguments = "/C netstat -ao";
             startInfo.UseShellExecute = false;
             startInfo.RedirectStandardOutput = true;
+            startInfo.CreateNoWindow = true;
             cmd.StartInfo = startInfo;
             #endregion
             
@@ -130,10 +131,9 @@ namespace Ants
             for (int i = 0; i < Now.Length; i++)
             {
                 tmp1 = Now[i];
-
-                for (int c = 0; (c < Start.Length) && ((Start[i].ProcessName).Equals(tmp2.ProcessName)); c++)
+                int c = 0;
+                for (tmp2 = Start[c]; (c < Start.Length) && ((tmp1.ProcessName).Equals(tmp2.ProcessName)); c++)
                 {
-                    tmp2 = Start[c];
 
                     //checking if the process from beginning increased more than the percentage
                     if((float)(tmp2.WorkingSet64)*(Increase+1)<(float)(tmp1.WorkingSet64))
@@ -161,19 +161,22 @@ namespace Ants
             String[] rows = data.Split('\n');
             String[] tmp3, sock;
 
-            List<String> addresses = JsonConvert.DeserializeObject<List<String>>(File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.json"));
-            List<String> ports = JsonConvert.DeserializeObject<List<String>>(File.ReadAllText(Directory.GetCurrentDirectory() + @"\port.json"));
+            
+            String[] addresses = File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.txt").Split(',');
+
+
+            String[] ports = File.ReadAllText(Directory.GetCurrentDirectory() + @"\ports.txt").Split(',');
 
             bool notFound = true;
 
-            for (int i = 4; i < rows.Length+4; i++)
+            for (int i = 4; i < rows.Length-1; i++)
             {
                 tmp3 = rows[i].Split(' ');
-                sock = tmp3[2].Split(':');
+                sock = tmp3[6].Split(':');
                 IP = sock[0];
                 Port = sock[1];
 
-                for (int c = 0; c < addresses.Count; c++)
+                for (int c = 0; c < addresses.Length; c++)
                 {
                     if (IP == addresses[c])
                     {
@@ -191,7 +194,7 @@ namespace Ants
                     }
                 }
 
-                for (int c = 0; c < ports.Count; c++)
+                for (int c = 0; c < ports.Length; c++)
                 {
                     if (Port == ports[c])
                     {

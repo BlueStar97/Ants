@@ -38,6 +38,7 @@ namespace Ants
                 Application.Exit();
             }
             Percentuali p = new Percentuali();
+            p.TopMost = true;
             p.ShowDialog(this);
 
             perpre = p.Perpre;
