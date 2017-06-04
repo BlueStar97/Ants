@@ -6,8 +6,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using Newtonsoft.Json;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography;
 
 namespace Ants
 {
@@ -34,14 +36,28 @@ namespace Ants
         private Process cmd;
         private ProcessStartInfo startInfo;
 
+        private IPAddress serverIP;
+        private int ShaPort;
+        
+        //Declaring error list and adding for adding new errors
+        Error List;
+        Error adding;
+
         //Initializing
         //perc related to ram, incr related to state
-        public Processo(String dPath, float perc, float incr)
+        public Processo(IPAddress ip, String dPath, float perc, float incr)
         {
+            //Declaring error list and adding for adding new errors
+            List = new Error();
+            adding = List;
+
             Start = Process.GetProcesses();
             Now = Start;
 
             downloadPath = "";
+
+            serverIP = ip;
+            ShaPort = 3356;
 
             #region cmd for getting connections
             cmd =new Process();
@@ -109,9 +125,6 @@ namespace Ants
         //Function used for checking
         private void Checks(object a, ElapsedEventArgs e)
         {
-            //Declaring error list and adding for adding new errors
-            Error List = new Error();
-            Error adding = List;
 
             //Creating the list of connections
             String IP = "", Port = "";
@@ -222,22 +235,34 @@ namespace Ants
         {
             String[] Files = Directory.GetFiles(downloadPath);
 
+            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            sock.Connect(new IPEndPoint(serverIP, ShaPort));
+
+            byte[] check = new byte[16];
+
             for (int i = 0; i < Files.Length; i++)
             {
                 if ((File.GetCreationTime(downloadPath + Files[i]).Day == DateTime.Now.Day) && (File.GetCreationTime(downloadPath + Files[i]).Month == DateTime.Now.Month) && (File.GetCreationTime(downloadPath + Files[i]).Year == DateTime.Now.Year))
-                { 
-                    //SHA-256 da applicare
-                    //String hash = 
+                {
+                    SHA256 nowsha = SHA256Managed.Create();
+                    byte[] hashValue;
+
+                    FileStream fStream = File.OpenRead(downloadPath + Files[i]);
+                    fStream.Position = 0;
+                    hashValue = nowsha.ComputeHash(fStream);
+                    sock.Send(hashValue);
+                    sock.Receive(check);
+                    if (check.ToString() == "Y")
+                    {
+                        adding.Message = "dangerousfile_" + downloadPath + Files[i];
+                        adding = adding.Next;
+                    }
                 }
             }
+
+            sock.Shutdown(SocketShutdown.Both);
+            sock.Close();
         }
         #endregion
-
-        /*public void foo()
-        {
-            object l = new object();
-            string s = JsonConvert.SerializeObject(l);
-            object l2 = JsonConvert.DeserializeObject<object>(s);
-        }*/
     }
 }

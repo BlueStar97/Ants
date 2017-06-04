@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Net.Sockets;
+using System.Net;
 
 namespace Ants
 {
@@ -15,6 +17,14 @@ namespace Ants
     {
         String path = "", perpre="", perram="";
         FolderBrowserDialog src = new FolderBrowserDialog();
+        Socket receive;
+        IPAddress addr;
+        int port;
+        byte[] bytesIP;
+        int bytesRecIP;
+        byte[] bytesPort;
+        int bytesRecPort;
+        FileStream fs;
 
         public Form1()
         {
@@ -27,35 +37,98 @@ namespace Ants
             notifyIcon1.Icon = new Icon(Directory.GetCurrentDirectory() + @"\antEater.ico");
             notifyIcon1.Visible = true;
             this.TopMost = true;
-            
-        }
+            bytesIP = new byte[4096];
+            bytesRecIP = 0;
+            bytesPort = new byte[4096];
+            bytesRecPort = 0;
 
-        private void Form1_Activated(object sender, EventArgs e)
-        {
-            
+            addr = IPAddress.Parse("");
+            port = 3355;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //Download blacklist from server
 
-            if (src.ShowDialog() == DialogResult.OK)
-                path = src.SelectedPath;
-            else
+            #region Update Black List
+            receive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            receive.Connect(new IPEndPoint(addr, port));
+            bytesRecIP = receive.Receive(bytesIP);
+            bytesRecPort = receive.Receive(bytesPort);
+            receive.Shutdown(SocketShutdown.Both);
+            receive.Close();
+
+            String oldIP = File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.txt");
+
+            if (oldIP.Length != bytesIP.ToString().Length)
             {
-                System.Windows.Forms.MessageBox.Show("Errore nella selezione del Folder dei Download.");
-                Application.Exit();
+                byte[] newIP = new byte[4096];
+                using (fs = File.OpenWrite(Directory.GetCurrentDirectory() + @"\addresses.txt"))
+                {
+                    Array.Copy(bytesIP, oldIP.Length, newIP, 0, bytesIP.ToString().Length - oldIP.Length);
+                    fs.Write(newIP, 0, bytesIP.ToString().Length - oldIP.Length);
+                }
             }
-            Percentuali p = new Percentuali();
-            p.TopMost = true;
-            p.ShowDialog(this);
 
-            perpre = p.Perpre;
-            perram = p.Perram;
+            String oldPort = File.ReadAllText(Directory.GetCurrentDirectory() + @"\ports.txt");
 
-            Processo proc = new Processo(path, int.Parse(perram), int.Parse(perpre));
+            if (oldPort.Length != bytesPort.ToString().Length)
+            {
+                byte[] newPort = new byte[4096];
+                using (fs = File.OpenWrite(Directory.GetCurrentDirectory() + @"\ports.txt"))
+                {
+                    Array.Copy(bytesPort, oldPort.Length, newPort, 0, bytesPort.ToString().Length - oldPort.Length);
+                    fs.Write(newPort, 0, bytesPort.ToString().Length - oldPort.Length);
+                }
+            }
+
+            #endregion
+
+            #region Initialization data
+
+            if (File.Exists(Directory.GetCurrentDirectory() + @"\infos.txt"))
+            {
+                String[] str = File.ReadAllText(Directory.GetCurrentDirectory() + @"\infos.txt").Split(',');
+
+                int check1, check2;
+
+                if ((int.TryParse(str[0], out check1)) && (int.TryParse(str[1], out check2)) && (Directory.Exists(str[2])))
+                {
+                    perpre = str[0];
+                    perram = str[1];
+                    path = str[2];
+                }
+                else
+                {
+                    File.Delete(Directory.GetCurrentDirectory() + @"\infos.txt");
+                }
+            }
+
+            if (!File.Exists(Directory.GetCurrentDirectory() + @"\infos.txt"))
+            {
+                if (src.ShowDialog() == DialogResult.OK)
+                    path = src.SelectedPath;
+                else
+                {
+                    System.Windows.Forms.MessageBox.Show("Errore nella selezione del Folder dei Download.");
+                    Application.Exit();
+                }
+                Percentuali p = new Percentuali();
+                p.TopMost = true;
+                p.ShowDialog(this);
+
+                perpre = p.Perpre;
+                perram = p.Perram;
+
+                File.Create(Directory.GetCurrentDirectory() + @"\infos.txt");
+                File.WriteAllText(Directory.GetCurrentDirectory() + @"\infos.txt", perpre + "," + perram + "," + path);
+            }
+
+            Processo proc = new Processo(addr, path, int.Parse(perram), int.Parse(perpre));
+
+            #endregion
         }
 
+        #region CloseMinimize Handler
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
@@ -85,7 +158,7 @@ namespace Ants
             this.Show();
             this.TopMost = true;
         }
-
+        #endregion
 
     }
 }
