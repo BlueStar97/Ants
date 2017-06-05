@@ -48,5 +48,42 @@ namespace Ants
             Proc = pr;
             Message = m;
         }
+
+        public static Error StartRemove(Error first, int IdProc)
+        {
+            if (first.mProc.Id == IdProc)
+            {
+                first = first.Next;
+                GC.Collect();
+                return Error.StartRemove(first, IdProc);
+            }
+            else
+            {
+                first.Remove(IdProc);
+                GC.Collect();
+                return first;
+            }
+        }
+
+        public void Remove(int IdProc)
+        {
+            if (this.Next.mProc != null)
+            {
+                if (this.Next.mProc.Id == IdProc)
+                {
+                    if (this.Next.Next.mProc != null)
+                    {
+                        this.Next = this.Next.Next;
+                        this.Remove(IdProc);
+                    }
+                    this.Next = new Error();
+                }
+                else
+                {
+                    this = this.Next;
+                    this.Remove(IdProc);
+                }
+            }
+        }
     }
 }
