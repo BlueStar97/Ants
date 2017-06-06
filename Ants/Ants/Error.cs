@@ -59,29 +59,29 @@ namespace Ants
             }
             else
             {
-                first.Remove(IdProc);
+                Error.Remove(first, IdProc);
                 GC.Collect();
                 return first;
             }
         }
 
-        public void Remove(int IdProc)
+        public static void Remove(Error first, int IdProc)
         {
-            if (this.Next.mProc != null)
+            if (first.Next.mProc != null)
             {
-                if (this.Next.mProc.Id == IdProc)
+                if (first.Next.mProc.Id == IdProc)
                 {
-                    if (this.Next.Next.mProc != null)
+                    if (first.Next.Next.mProc != null)
                     {
-                        this.Next = this.Next.Next;
-                        this.Remove(IdProc);
+                        first.Next = first.Next.Next;
+                        Error.Remove(first, IdProc);
                     }
-                    this.Next = new Error();
+                    first.Next = new Error();
                 }
                 else
                 {
-                    this = this.Next;
-                    this.Remove(IdProc);
+                    first = first.Next;
+                    Error.Remove(first, IdProc);
                 }
             }
         }
