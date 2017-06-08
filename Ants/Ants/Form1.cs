@@ -42,7 +42,7 @@ namespace Ants
             bytesPort = new byte[4096];
             bytesRecPort = 0;
 
-            addr = IPAddress.Parse("");
+            addr = Dns.GetHostAddresses("ip-172-31-29-9.us-west-2.compute.internal")[0];
             port = 3355;
         }
 

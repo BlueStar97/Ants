@@ -151,15 +151,14 @@ namespace Ants
                     //checking if the process from beginning increased more than the percentage
                     if((float)(tmp2.WorkingSet64)*(Increase+1)<(float)(tmp1.WorkingSet64))
                     {
-                        adding.add(tmp1,"percentage_from_start_error");
-                        
+                        Error.add(adding, tmp1, "percentage_from_start_error");
                     }
                 }
 
                 //checking if the process uses more than the percentage allowed in RAM
                 if ((float)(tmp1.WorkingSet64) > (float)(Ram.TotMemory) * Ram.Percentage)
                 {
-                    adding.add(tmp1,"percentage_from_total_ram_error");
+                    Error.add(adding,tmp1,"percentage_from_total_ram_error");
                 }
                 tmp2 = null;
             }
@@ -199,8 +198,7 @@ namespace Ants
                         {
                             if (Now[h].Id == int.Parse(tmp3[4]))
                             {
-                                adding.add(Now[h], "IP_address_in_BL");
-                                adding = adding.Next;
+                                Error.add(adding,Now[h], "IP_address_in_BL");
                                 notFound = false;
                             }
                         }
@@ -217,8 +215,7 @@ namespace Ants
                         {
                             if (Now[h].Id == int.Parse(tmp3[4]))
                             {
-                                adding.add(Now[h], "Port_in_BL");
-                                adding = adding.Next;
+                                Error.add(adding, Now[h], "Port_in_BL");
                                 notFound = false;
                             }
                         }
@@ -254,8 +251,7 @@ namespace Ants
                     sock.Receive(check);
                     if (check.ToString() == "Y")
                     {
-                        adding.Message = "dangerousfile_" + downloadPath + Files[i];
-                        adding = adding.Next;
+                        Error.add(adding, null, "dangerousfile_" + downloadPath + Files[i]);
                     }
                 }
             }

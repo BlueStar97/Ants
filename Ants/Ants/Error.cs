@@ -49,6 +49,14 @@ namespace Ants
             Message = m;
         }
 
+        public static Error add(Error first, Process pr, String m)
+        {
+            first.Proc=pr;
+            first.Message = m;
+            first = first.Next;
+            return first;
+        }
+
         public static Error StartRemove(Error first, int IdProc)
         {
             if (first.mProc.Id == IdProc)

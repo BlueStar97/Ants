@@ -21,7 +21,7 @@ namespace Ants
 
         private void Inserisci_Click(object sender, EventArgs e)
         {
-            if (label3.Text == "Campo non valido" || label4.Text == "Campo non valido" || textBox1.Text == "" || textBox2.Text == "")
+            if (label3.Text == "Campo non valido" || label4.Text == "Campo non valido" || textBox1.Text == "" || textBox2.Text == "" || int.Parse(textBox2.Text)>100 || int.Parse(textBox2.Text)<0)
             {
                 label5.Text = "I dati inseriti non sono corretti";
             }
@@ -44,6 +44,14 @@ namespace Ants
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
             {
