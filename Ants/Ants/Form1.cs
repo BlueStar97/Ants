@@ -123,6 +123,13 @@ namespace Ants
                 File.WriteAllText(Directory.GetCurrentDirectory() + @"\infos.txt", perpre + "," + perram + "," + path);
             }
 
+            host.Dock = DockStyle.Fill;
+
+            UserControl1 uc = new UserControl1();
+            host.Child = uc;
+
+            this.Controls.Add(host);
+
             Processo proc = new Processo(addr, path, int.Parse(perram), int.Parse(perpre));
 
             #endregion
@@ -159,6 +166,11 @@ namespace Ants
             this.TopMost = true;
         }
         #endregion
+
+        private void elementHost1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        {
+
+        }
 
     }
 }
