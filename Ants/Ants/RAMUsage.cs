@@ -11,7 +11,7 @@ namespace Ants
     
     class RAMUsage
     {
-        //Importing DLL kernel32.dll, needed for getting the total physical memory
+        //Importing DLL kernel32.dll, needed to get the total physical memory
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetPhysicallyInstalledSystemMemory(out long TotalMemoryInKilobytes);
