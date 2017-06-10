@@ -41,8 +41,14 @@ namespace Ants
             bytesRecIP = 0;
             bytesPort = new byte[4096];
             bytesRecPort = 0;
-
-            addr = Dns.GetHostAddresses("ip-172-31-29-9.us-west-2.compute.internal")[0];
+            try
+            {
+                addr = Dns.GetHostAddresses("ip-172-31-29-9.us-west-2.compute.internal")[0];
+            }
+            catch(SocketException e)
+            {
+                
+            }
             port = 3355;
         }
 
@@ -123,13 +129,6 @@ namespace Ants
                 File.WriteAllText(Directory.GetCurrentDirectory() + @"\infos.txt", perpre + "," + perram + "," + path);
             }
 
-            host.Dock = DockStyle.Fill;
-
-            UserControl1 uc = new UserControl1();
-            host.Child = uc;
-
-            this.Controls.Add(host);
-
             Processo proc = new Processo(addr, path, int.Parse(perram), int.Parse(perpre));
 
             #endregion
@@ -168,6 +167,11 @@ namespace Ants
         #endregion
 
         private void elementHost1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        {
+
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
