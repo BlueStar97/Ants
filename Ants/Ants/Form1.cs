@@ -27,7 +27,7 @@ namespace Ants
         int bytesRecPort;
         FileStream fs;
         String selector;
-
+        Processo proc;
 
         public Form1()
         {
@@ -133,7 +133,7 @@ namespace Ants
                 File.WriteAllText(Directory.GetCurrentDirectory() + @"\infos.txt", perpre + "," + perram + "," + path);
             }
 
-            Processo proc = new Processo(listView1, addr, path, int.Parse(perram), int.Parse(perpre));
+            proc = new Processo(listView1, addr, path, int.Parse(perram), int.Parse(perpre));
 
             #endregion
         }
@@ -192,6 +192,16 @@ namespace Ants
                 }
                 this.Text = "Uccidi/Elimina";
                 selector = "";
+            }
+        }
+
+        private void control_Click(object sender, EventArgs e)
+        {
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo d in allDrives)
+            {
+                proc.WholeCheck(d.Name);
             }
         }
 

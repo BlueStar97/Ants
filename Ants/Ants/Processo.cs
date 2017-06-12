@@ -270,6 +270,52 @@ namespace Ants
             sock.Close();
         }
 
+        public void WholeCheck(String path)
+        {
+
+            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            sock.Connect(new IPEndPoint(serverIP, ShaPort));
+
+            subcheck(sock, path);
+            
+            sock.Send(Encoding.ASCII.GetBytes("finished"));
+
+            sock.Shutdown(SocketShutdown.Both);
+            sock.Close();
+        }
+
+        private void subcheck(Socket sock, String path)
+        {
+            String[] Files = Directory.GetFiles(path);
+            byte[] check = new byte[16];
+
+            for (int i = 0; i < Files.Length; i++)
+            {
+                if ((File.GetCreationTime(path + @"\" + Files[i]).Day == DateTime.Now.Day) && (File.GetCreationTime(path + @"\" + Files[i]).Month == DateTime.Now.Month) && (File.GetCreationTime(path + @"\" + Files[i]).Year == DateTime.Now.Year))
+                {
+                    SHA256 nowsha = SHA256Managed.Create();
+                    byte[] hashValue;
+
+                    FileStream fStream = File.OpenRead(downloadPath + Files[i]);
+                    fStream.Position = 0;
+                    hashValue = nowsha.ComputeHash(fStream);
+                    sock.Send(hashValue);
+                    sock.Receive(check);
+                    if (check.ToString() == "found")
+                    {
+                        Error.add(adding, null, "dangerousfile_" + downloadPath + Files[i]);
+                    }
+                }
+            }
+
+            String[] dirs = Directory.GetDirectories(path);
+
+            for (int i = 0; i < Files.Length; i++)
+            {
+                subcheck(sock, path + dirs[i]);
+            }
+        }
+
         private void showError(object a, ElapsedEventArgs e)
         {
             adding = List;

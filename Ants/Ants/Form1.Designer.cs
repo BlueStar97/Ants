@@ -97,6 +97,7 @@
             this.control.TabIndex = 3;
             this.control.Text = "Controllo del sistema";
             this.control.UseVisualStyleBackColor = true;
+            this.control.Click += new System.EventHandler(this.control_Click);
             // 
             // Form1
             // 
