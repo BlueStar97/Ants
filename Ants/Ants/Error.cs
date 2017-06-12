@@ -15,7 +15,6 @@ namespace Ants
 
         public Error()
         {
-            Proc = new Process();
             Message = "";
         }
 
@@ -53,43 +52,97 @@ namespace Ants
         {
             first.Proc=pr;
             first.Message = m;
+            first.Next = new Error();
             first = first.Next;
             return first;
         }
 
-        public static Error StartRemove(Error first, int IdProc)
+        public static Error StartRemoveP(Error first, int IdProc)
         {
             if (first.mProc.Id == IdProc)
             {
                 first = first.Next;
                 GC.Collect();
-                return Error.StartRemove(first, IdProc);
+                return Error.StartRemoveP(first, IdProc);
             }
             else
             {
-                Error.Remove(first, IdProc);
+                Error ffirst = first;
+                Error.RemoveP(ffirst, IdProc);
                 GC.Collect();
                 return first;
             }
         }
 
-        public static void Remove(Error first, int IdProc)
+        public static void RemoveP(Error first, int IdProc)
         {
-            if (first.Next.mProc != null)
+            if (first.Next.Message != "")
             {
-                if (first.Next.mProc.Id == IdProc)
+                if (first.Next.mProc != null)
                 {
-                    if (first.Next.Next.mProc != null)
+                    if (first.Next.mProc.Id == IdProc)
                     {
-                        first.Next = first.Next.Next;
-                        Error.Remove(first, IdProc);
+                        if (first.Next.Next.Message != "")
+                        {
+                            first.Next = first.Next.Next;
+                            Error.RemoveP(first.Next, IdProc);
+                        }
+                        else
+                        {
+                            first.Next = new Error();
+                        }
                     }
-                    first.Next = new Error();
+                    else
+                    {
+                        first = first.Next;
+                        Error.RemoveP(first.Next, IdProc);
+                    }
                 }
                 else
                 {
                     first = first.Next;
-                    Error.Remove(first, IdProc);
+                    Error.RemoveP(first.Next, IdProc);
+                }
+            }
+        }
+
+        public static Error StartRemoveF(Error first, String path)
+        {
+            if (first.Message == path)
+            {
+                first = first.Next;
+                GC.Collect();
+                return Error.StartRemoveF(first.Next, path);
+            }
+            else
+            {
+                Error ffirst = first;
+                Error.RemoveF(ffirst, path);
+                GC.Collect();
+                return first;
+            }
+        }
+
+        public static void RemoveF(Error first, String path)
+        {
+            if (first.Next.Message != "")
+            {
+                if (first.Next.Message == path)
+                {
+                    if (first.Next.Next.Message != "")
+                    {
+                        first.Next = first.Next.Next;
+                        Error.RemoveF(first.Next, path);
+                    }
+                    else
+                    {
+                        first.Next = new Error();
+                    }
+                }
+                else
+                {
+                    first = first.Next;
+                    Error.RemoveF(first.Next, path);
                 }
             }
         }

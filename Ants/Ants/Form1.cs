@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
+using System.Diagnostics;
 
 namespace Ants
 {
@@ -25,6 +26,8 @@ namespace Ants
         byte[] bytesPort;
         int bytesRecPort;
         FileStream fs;
+        String selector;
+
 
         public Form1()
         {
@@ -41,6 +44,7 @@ namespace Ants
             bytesRecIP = 0;
             bytesPort = new byte[4096];
             bytesRecPort = 0;
+            selector = "";
             try
             {
                 addr = Dns.GetHostAddresses("ip-172-31-29-9.us-west-2.compute.internal")[0];
@@ -129,7 +133,7 @@ namespace Ants
                 File.WriteAllText(Directory.GetCurrentDirectory() + @"\infos.txt", perpre + "," + perram + "," + path);
             }
 
-            Processo proc = new Processo(addr, path, int.Parse(perram), int.Parse(perpre));
+            Processo proc = new Processo(listView1, addr, path, int.Parse(perram), int.Parse(perpre));
 
             #endregion
         }
@@ -159,22 +163,86 @@ namespace Ants
             this.TopMost = true;
         }
 
+        private void killdelete_Click(object sender, EventArgs e)
+        {
+            if (this.Text != "Uccidi/Elimina" && selector != "")
+            {
+                if (this.Text == "Uccidi")
+                {
+                    Process[] tmp = Process.GetProcesses();
+                    for (int i = 0; i < tmp.Length; i++)
+                    {
+                        if (tmp[i].Id == int.Parse(selector))
+                        {
+                            tmp[i].Kill();
+                        }
+                    }
+                }
+                else if (this.Text == "Elimina")
+                {
+                    File.Delete(selector);
+                }
+
+                foreach (ListViewItem itemRow in listView1.Items)
+                {
+                    if (itemRow.SubItems[0].Text == selector)
+                    {
+                        itemRow.Remove();
+                    }
+                }
+                this.Text = "Uccidi/Elimina";
+                selector = "";
+            }
+        }
+
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             this.Show();
             this.TopMost = true;
         }
         #endregion
-
-        private void elementHost1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
-        {
-
-        }
-
+        
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            selector = listView1.SelectedItems[0].Text;
+            switch (int.Parse(selector[0].ToString()))
+            {
+                case 0:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 1:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 2:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 3:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 4:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 5:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 6:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 7:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 8:
+                    killdelete.Text = "Uccidi";
+                    break;
+                case 9:
+                    killdelete.Text = "Uccidi";
+                    break;
+                default:
+                    killdelete.Text = "Elimina";
+                    break;
+            }
         }
 
+        
     }
 }

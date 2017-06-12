@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Windows.Forms;
 
 namespace Ants
 {
@@ -30,7 +31,7 @@ namespace Ants
         private RAMUsage mRam;
 
         //Timer to do the checking each X milliseconds
-        private Timer mChecking, mDownloads;
+        private System.Timers.Timer mChecking, mDownloads, mError;
 
         //connection established
         private Process cmd;
@@ -38,14 +39,16 @@ namespace Ants
 
         private IPAddress serverIP;
         private int ShaPort;
-        
+
         //Declaring error list and adding for adding new errors
         Error List;
         Error adding;
 
+        ListView listing;
+
         //Initializing
         //perc related to ram, incr related to state
-        public Processo(IPAddress ip, String dPath, float perc, float incr)
+        public Processo(ListView mlist, IPAddress ip, String dPath, float perc, float incr)
         {
             //Declaring error list and adding for adding new errors
             List = new Error();
@@ -59,8 +62,8 @@ namespace Ants
             serverIP = ip;
             ShaPort = 3356;
 
-            #region cmd for getting connections
-            cmd =new Process();
+            #region cmd to get connections
+            cmd = new Process();
             startInfo = new ProcessStartInfo();
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.FileName = "cmd.exe";
@@ -70,17 +73,23 @@ namespace Ants
             startInfo.CreateNoWindow = true;
             cmd.StartInfo = startInfo;
             #endregion
-            
+
             Ram = new RAMUsage();
             Increase = 1000;
-            mChecking = new Timer(2000);
+            mChecking = new System.Timers.Timer(2000);
             mChecking.Elapsed += Checks;
             mChecking.AutoReset = true;
             mChecking.Start();
-            mDownloads = new Timer(360000);
+            mDownloads = new System.Timers.Timer(360000);
             mDownloads.Elapsed += newFiles;
             mDownloads.AutoReset = true;
             mDownloads.Start();
+            mError = new System.Timers.Timer(10000);
+            mError.Elapsed += showError;
+            mError.AutoReset = true;
+            mError.Start();
+
+            listing = mlist;
         }
 
         //Properties
@@ -149,7 +158,7 @@ namespace Ants
                 {
 
                     //checking if the process from beginning increased more than the percentage
-                    if((float)(tmp2.WorkingSet64)*(Increase+1)<(float)(tmp1.WorkingSet64))
+                    if ((float)(tmp2.WorkingSet64) * (Increase + 1) < (float)(tmp1.WorkingSet64))
                     {
                         Error.add(adding, tmp1, "percentage_from_start_error");
                     }
@@ -158,7 +167,7 @@ namespace Ants
                 //checking if the process uses more than the percentage allowed in RAM
                 if ((float)(tmp1.WorkingSet64) > (float)(Ram.TotMemory) * Ram.Percentage)
                 {
-                    Error.add(adding,tmp1,"percentage_from_total_ram_error");
+                    Error.add(adding, tmp1, "percentage_from_total_ram_error");
                 }
                 tmp2 = null;
             }
@@ -173,7 +182,7 @@ namespace Ants
             String[] rows = data.Split('\n');
             String[] tmp3, sock;
 
-            
+
             String[] addresses = File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.txt").Split(',');
 
 
@@ -181,7 +190,7 @@ namespace Ants
 
             bool notFound = true;
 
-            for (int i = 4; i < rows.Length-1; i++)
+            for (int i = 4; i < rows.Length - 1; i++)
             {
                 tmp3 = rows[i].Split(' ');
                 sock = tmp3[6].Split(':');
@@ -192,13 +201,13 @@ namespace Ants
                 {
                     if (IP == addresses[c])
                     {
-                        notFound=true;
+                        notFound = true;
 
                         for (int h = 0; (h < Now.Length) && (notFound); h++)
                         {
                             if (Now[h].Id == int.Parse(tmp3[4]))
                             {
-                                Error.add(adding,Now[h], "IP_address_in_BL");
+                                Error.add(adding, Now[h], "IP_address_in_BL");
                                 notFound = false;
                             }
                         }
@@ -258,6 +267,81 @@ namespace Ants
 
             sock.Shutdown(SocketShutdown.Both);
             sock.Close();
+        }
+
+        private void showError(object a, ElapsedEventArgs e)
+        {
+            adding = List;
+
+            foreach (ListViewItem itemRow in listing.Items)
+            {
+                itemRow.Remove();
+            }
+
+            ListViewItem s;
+
+            while (adding.Message != "")
+            {
+                s = new ListViewItem();
+
+                if (adding.Proc != null)
+                {
+                    s.SubItems.Add(adding.Proc.Id.ToString());
+
+                    s.SubItems.Add(adding.Message);
+                }
+                else
+                {
+                    s.SubItems.Add(adding.Message);
+
+                    s.SubItems.Add("Digest del file trovato nel database");
+                }
+
+                listing.Items.Add(s);
+                adding = adding.Next;
+            }
+        }
+
+        private void remove(String prob)
+        {
+            adding = List;
+            switch (int.Parse(prob[0].ToString()))
+            {
+                case 0:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 1:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 2:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 3:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 4:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 5:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 6:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 7:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 8:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                case 9:
+                    Error.StartRemoveP(adding, int.Parse(prob));
+                    break;
+                default:
+                    Error.StartRemoveF(adding, prob);
+                    break;
+
+            }
         }
         #endregion
     }
