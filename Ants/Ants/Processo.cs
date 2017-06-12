@@ -258,12 +258,13 @@ namespace Ants
                     hashValue = nowsha.ComputeHash(fStream);
                     sock.Send(hashValue);
                     sock.Receive(check);
-                    if (check.ToString() == "Y")
+                    if (check.ToString() == "found")
                     {
                         Error.add(adding, null, "dangerousfile_" + downloadPath + Files[i]);
                     }
                 }
             }
+            sock.Send(Encoding.ASCII.GetBytes("finished"));
 
             sock.Shutdown(SocketShutdown.Both);
             sock.Close();
