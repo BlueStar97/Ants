@@ -162,16 +162,18 @@ namespace Ants
 
             add = proc.addvalue();
 
-            listView1 = this.adding(add);
+            for (int i = 0; i < add.Count; i++)
+            {
+                listView1.Items.Add(add[i]);
+            }
+
+            //listView1 = this.adding(add);
         }
 
         public ListView adding(List<ListViewItem> ll)
         {
             ListView res = new ListView();
-            for (int i=0; i<ll.Count;i++)
-            {
-                res.Items.Add(ll[i]);
-            }
+            
             return res;
         }
 
