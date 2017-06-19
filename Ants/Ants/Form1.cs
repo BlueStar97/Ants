@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using System.Diagnostics;
+using System.Timers;
 
 namespace Ants
 {
@@ -28,6 +25,11 @@ namespace Ants
         FileStream fs;
         String selector;
         Processo proc;
+        private System.Timers.Timer mError;
+
+        public delegate void addlisting(object o, ElapsedEventArgs e);
+        public event addlisting addlistview;
+
 
         public Form1()
         {
@@ -47,7 +49,7 @@ namespace Ants
             selector = "";
             try
             {
-                addr = Dns.GetHostAddresses("ip-172-31-29-9.us-west-2.compute.internal")[0];
+                addr = Dns.GetHostAddresses("ec2-54-218-1-173.us-west-2.compute.amazonaws.com")[0];
             }
             catch(SocketException e)
             {
@@ -61,36 +63,41 @@ namespace Ants
 
             #region Update Black List
             receive = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            receive.Connect(new IPEndPoint(addr, port));
-            bytesRecIP = receive.Receive(bytesIP);
-            bytesRecPort = receive.Receive(bytesPort);
-            receive.Shutdown(SocketShutdown.Both);
-            receive.Close();
-
-            String oldIP = File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.txt");
-
-            if (oldIP.Length != bytesIP.ToString().Length)
+            IPEndPoint serveradd = new IPEndPoint(addr, port);
+            try
             {
-                byte[] newIP = new byte[4096];
-                using (fs = File.OpenWrite(Directory.GetCurrentDirectory() + @"\addresses.txt"))
+                receive.Connect(serveradd);
+                bytesRecIP = receive.Receive(bytesIP);
+                bytesRecPort = receive.Receive(bytesPort);
+                receive.Shutdown(SocketShutdown.Both);
+                receive.Close();
+
+                String oldIP = File.ReadAllText(Directory.GetCurrentDirectory() + @"\addresses.txt");
+
+                if (oldIP.Length != bytesIP.ToString().Length)
                 {
-                    Array.Copy(bytesIP, oldIP.Length, newIP, 0, bytesIP.ToString().Length - oldIP.Length);
-                    fs.Write(newIP, 0, bytesIP.ToString().Length - oldIP.Length);
+                    byte[] newIP = new byte[4096];
+                    using (fs = File.OpenWrite(Directory.GetCurrentDirectory() + @"\addresses.txt"))
+                    {
+                        Array.Copy(bytesIP, oldIP.Length, newIP, 0, bytesIP.ToString().Length - oldIP.Length);
+                        fs.Write(newIP, 0, bytesIP.ToString().Length - oldIP.Length);
+                    }
+                }
+
+                String oldPort = File.ReadAllText(Directory.GetCurrentDirectory() + @"\ports.txt");
+
+                if (oldPort.Length != bytesPort.ToString().Length)
+                {
+                    byte[] newPort = new byte[4096];
+                    using (fs = File.OpenWrite(Directory.GetCurrentDirectory() + @"\ports.txt"))
+                    {
+                        Array.Copy(bytesPort, oldPort.Length, newPort, 0, bytesPort.ToString().Length - oldPort.Length);
+                        fs.Write(newPort, 0, bytesPort.ToString().Length - oldPort.Length);
+                    }
                 }
             }
-
-            String oldPort = File.ReadAllText(Directory.GetCurrentDirectory() + @"\ports.txt");
-
-            if (oldPort.Length != bytesPort.ToString().Length)
-            {
-                byte[] newPort = new byte[4096];
-                using (fs = File.OpenWrite(Directory.GetCurrentDirectory() + @"\ports.txt"))
-                {
-                    Array.Copy(bytesPort, oldPort.Length, newPort, 0, bytesPort.ToString().Length - oldPort.Length);
-                    fs.Write(newPort, 0, bytesPort.ToString().Length - oldPort.Length);
-                }
-            }
-
+            catch (SocketException ss)
+            { }
             #endregion
 
             #region Initialization data
@@ -129,13 +136,43 @@ namespace Ants
                 perpre = p.Perpre;
                 perram = p.Perram;
 
-                File.Create(Directory.GetCurrentDirectory() + @"\infos.txt");
-                File.WriteAllText(Directory.GetCurrentDirectory() + @"\infos.txt", perpre + "," + perram + "," + path);
+                FileStream fs = new FileStream(Directory.GetCurrentDirectory() + @"\infos.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite);
+
+                fs.Write(Encoding.ASCII.GetBytes(perpre + "," + perram + "," + path), 0, Encoding.ASCII.GetBytes(perpre + "," + perram + "," + path).Length);
             }
 
-            proc = new Processo(listView1, addr, path, int.Parse(perram), int.Parse(perpre));
+            mError = new System.Timers.Timer(10000);
+            mError.AutoReset = true;
+            mError.Elapsed += Proc_addlist;
+            mError.Start();
 
+            proc = new Processo(this, addr, path, int.Parse(perram), int.Parse(perpre));
+            addlistview += Proc_addlist;
             #endregion
+        }
+
+        public void Proc_addlist(object o, ElapsedEventArgs e)
+        {
+            List<ListViewItem> add = new List<ListViewItem>();
+
+            foreach (ListViewItem item in listView1.Items)
+            {
+                item.Remove();
+            }
+
+            add = proc.addvalue();
+
+            listView1 = this.adding(add);
+        }
+
+        public ListView adding(List<ListViewItem> ll)
+        {
+            ListView res = new ListView();
+            for (int i=0; i<ll.Count;i++)
+            {
+                res.Items.Add(ll[i]);
+            }
+            return res;
         }
 
         #region CloseMinimize Handler
@@ -211,7 +248,7 @@ namespace Ants
             this.TopMost = true;
         }
         #endregion
-        
+
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
             selector = listView1.SelectedItems[0].Text;
@@ -252,7 +289,5 @@ namespace Ants
                     break;
             }
         }
-
-        
     }
 }

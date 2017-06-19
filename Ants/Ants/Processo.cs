@@ -31,7 +31,8 @@ namespace Ants
         private RAMUsage mRam;
 
         //Timer to do the checking each X milliseconds
-        private System.Timers.Timer mChecking, mDownloads, mError;
+        private System.Timers.Timer mChecking, mDownloads;
+        public System.Timers.Timer mError;
 
         //connection established
         private Process cmd;
@@ -44,11 +45,14 @@ namespace Ants
         Error List;
         Error adding;
 
-        ListView listing;
+        Form1 frm;
+
+        public delegate void lista(ListViewItem a, EventArgs e);
+        public event lista addlist;
 
         //Initializing
         //perc related to ram, incr related to state
-        public Processo(ListView mlist, IPAddress ip, String dPath, float perc, float incr)
+        public Processo(Form1 mfrm, IPAddress ip, String dPath, float perc, float incr)
         {
             //Declaring error list and adding for adding new errors
             List = new Error();
@@ -84,12 +88,8 @@ namespace Ants
             mDownloads.Elapsed += newFiles;
             mDownloads.AutoReset = true;
             mDownloads.Start();
-            mError = new System.Timers.Timer(10000);
-            mError.Elapsed += showError;
-            mError.AutoReset = true;
-            mError.Start();
 
-            listing = mlist;
+            frm = mfrm;
         }
 
         //Properties
@@ -316,39 +316,6 @@ namespace Ants
             }
         }
 
-        private void showError(object a, ElapsedEventArgs e)
-        {
-            adding = List;
-
-            foreach (ListViewItem itemRow in listing.Items)
-            {
-                itemRow.Remove();
-            }
-
-            ListViewItem s;
-
-            while (adding.Message != "")
-            {
-                s = new ListViewItem();
-
-                if (adding.Proc != null)
-                {
-                    s.SubItems.Add(adding.Proc.Id.ToString());
-
-                    s.SubItems.Add(adding.Message);
-                }
-                else
-                {
-                    s.SubItems.Add(adding.Message);
-
-                    s.SubItems.Add("Digest del file trovato nel database");
-                }
-
-                listing.Items.Add(s);
-                adding = adding.Next;
-            }
-        }
-
         private void remove(String prob)
         {
             adding = List;
@@ -389,6 +356,32 @@ namespace Ants
                     break;
 
             }
+        }
+
+        public List<ListViewItem> addvalue()
+        {
+            adding = List;
+            List<ListViewItem> ritorno = new List<ListViewItem>();
+            ListViewItem s = new ListViewItem();
+
+            while (adding.Message != "")
+            {
+                if (adding.Proc != null)
+                {
+                    s.SubItems.Add(adding.Proc.Id.ToString());
+                    s.SubItems.Add(adding.Message);
+                }
+                else
+                {
+                    s.SubItems.Add(adding.Message);
+                    s.SubItems.Add("Digest del file trovato nel database");
+                }
+
+
+                ritorno.Add(s);
+                adding = adding.Next;
+            }
+            return ritorno;
         }
         #endregion
     }
