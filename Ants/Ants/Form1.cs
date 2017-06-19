@@ -7,7 +7,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using System.Diagnostics;
-using System.Timers;
+using System.Threading;
 
 namespace Ants
 {
@@ -25,11 +25,7 @@ namespace Ants
         FileStream fs;
         String selector;
         Processo proc;
-        private System.Timers.Timer mError;
-
-        public delegate void addlisting(object o, ElapsedEventArgs e);
-        public event addlisting addlistview;
-
+        bool wannaDie;
 
         public Form1()
         {
@@ -47,9 +43,11 @@ namespace Ants
             bytesPort = new byte[4096];
             bytesRecPort = 0;
             selector = "";
+            wannaDie = false;
+
             try
             {
-                addr = Dns.GetHostAddresses("ec2-54-218-1-173.us-west-2.compute.amazonaws.com")[0];
+                addr = Dns.GetHostAddresses("ec2-34-211-35-47.us-west-2.compute.amazonaws.com")[0];
             }
             catch(SocketException e)
             {
@@ -141,32 +139,30 @@ namespace Ants
                 fs.Write(Encoding.ASCII.GetBytes(perpre + "," + perram + "," + path), 0, Encoding.ASCII.GetBytes(perpre + "," + perram + "," + path).Length);
             }
 
-            mError = new System.Timers.Timer(10000);
-            mError.AutoReset = true;
-            mError.Elapsed += Proc_addlist;
-            mError.Start();
-
             proc = new Processo(this, addr, path, int.Parse(perram), int.Parse(perpre));
-            addlistview += Proc_addlist;
             #endregion
         }
 
-        public void Proc_addlist(object o, ElapsedEventArgs e)
+        public void Proc_addlist()
         {
             List<ListViewItem> add = new List<ListViewItem>();
 
-            foreach (ListViewItem item in listView1.Items)
+            for(int i=0;i < listView1.Items.Count;i++)
             {
-                item.Remove();
+                listView1.Items[i].Remove();
             }
+
+            //listView1.Items.Clear();
 
             add = proc.addvalue();
 
             for (int i = 0; i < add.Count; i++)
             {
                 listView1.Items.Add(add[i]);
+                listView1.EnsureVisible(listView1.Items.Count - 1);
             }
 
+            listView1.Refresh();
             //listView1 = this.adding(add);
         }
 
@@ -180,10 +176,13 @@ namespace Ants
         #region CloseMinimize Handler
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            e.Cancel = true;
-            notifyIcon1.Visible = true;
-            notifyIcon1.ShowBalloonTip(500);
-            this.Hide();
+            if (!wannaDie)
+            {
+                e.Cancel = true;
+                notifyIcon1.Visible = true;
+                notifyIcon1.ShowBalloonTip(500);
+                this.Hide();
+            }
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -231,17 +230,47 @@ namespace Ants
                 }
                 this.Text = "Uccidi/Elimina";
                 selector = "";
+
+                Proc_addlist();
             }
         }
 
         private void control_Click(object sender, EventArgs e)
         {
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
-
-            foreach (DriveInfo d in allDrives)
+            if (control.Text != "Controllo in corso...")
             {
-                proc.WholeCheck(d.Name);
+                control.Text = "Controllo in corso...";
+
+                Thread th;
+                th = new Thread(WaitForEnd);
+                th.Start();
             }
+        }
+
+        public void WaitForEnd()
+        {
+            Thread th;
+            th = new Thread(proc.InitCheck);
+            th.Start();
+            th.Join();
+            control.Text = "Controllo del Sistema";
+        }
+
+        private void refresh_Click(object sender, EventArgs e)
+        {
+            Proc_addlist();
+        }
+
+        private void reset_Click(object sender, EventArgs e)
+        {
+            File.Delete(Directory.GetCurrentDirectory() + @"\infos.txt");
+            MessageBox.Show("Riavvia per reinserire i dati", "Reset");
+        }
+
+        private void quit_Click(object sender, EventArgs e)
+        {
+            wannaDie = true;
+            Application.Exit();
         }
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -253,7 +282,8 @@ namespace Ants
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            selector = listView1.SelectedItems[0].Text;
+            if(listView1.SelectedItems.Count==1)
+                selector = listView1.SelectedItems[0].Text;
             switch (int.Parse(selector[0].ToString()))
             {
                 case 0:

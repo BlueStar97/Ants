@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 using System.IO;
 using System.Net;
@@ -32,7 +29,6 @@ namespace Ants
 
         //Timer to do the checking each X milliseconds
         private System.Timers.Timer mChecking, mDownloads;
-        public System.Timers.Timer mError;
 
         //connection established
         private Process cmd;
@@ -46,9 +42,6 @@ namespace Ants
         Error adding;
 
         Form1 frm;
-
-        public delegate void lista(ListViewItem a, EventArgs e);
-        public event lista addlist;
 
         //Initializing
         //perc related to ram, incr related to state
@@ -80,7 +73,7 @@ namespace Ants
 
             Ram = new RAMUsage();
             Increase = 1000;
-            mChecking = new System.Timers.Timer(2000);
+            mChecking = new System.Timers.Timer(5000);
             mChecking.Elapsed += Checks;
             mChecking.AutoReset = true;
             mChecking.Start();
@@ -150,6 +143,9 @@ namespace Ants
             //Declaring processes tmp
             Process tmp1, tmp2 = null;
 
+            Error tmp = List;
+            bool found = false;
+
             for (int i = 0; i < Now.Length; i++)
             {
                 tmp1 = Now[i];
@@ -160,14 +156,33 @@ namespace Ants
                     //checking if the process from beginning increased more than the percentage
                     if ((float)(tmp2.WorkingSet64) * (Increase + 1) < (float)(tmp1.WorkingSet64))
                     {
-                        Error.add(adding, tmp1, "percentage_from_start_error");
+                        while (tmp.Message != "")
+                        {
+                            if (tmp.Message == "percentage_from_start_error" && tmp.Proc.Id == tmp1.Id)
+                                found = true;
+                            tmp = tmp.Next;
+                        }
+                        if (!found)
+                            Error.add(adding, tmp1, "percentage_from_start_error");
                     }
                 }
 
                 //checking if the process uses more than the percentage allowed in RAM
                 if ((float)(tmp1.WorkingSet64) > (float)(Ram.TotMemory) * Ram.Percentage)
                 {
-                    Error.add(adding, tmp1, "percentage_from_total_ram_error");
+                    found = false;
+                    tmp = List;
+
+                    while (tmp.Message != "" && !found)
+                    {
+                        if (tmp.Message == "percentage_from_total_ram_error" && tmp.Proc.Id == tmp1.Id)
+                        {
+                            found = true;
+                        }
+                        tmp = tmp.Next;
+                    }
+                    if (!found)
+                        Error.add(adding, tmp1, "percentage_from_total_ram_error");
                 }
                 tmp2 = null;
             }
@@ -270,6 +285,16 @@ namespace Ants
             sock.Close();
         }
 
+        public void InitCheck()
+        {
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo d in allDrives)
+            {
+                this.WholeCheck(d.ToString());
+            }
+        }
+
         public void WholeCheck(String path)
         {
 
@@ -361,6 +386,7 @@ namespace Ants
         public List<ListViewItem> addvalue()
         {
             adding = List;
+
             List<ListViewItem> ritorno = new List<ListViewItem>();
             ListViewItem s = new ListViewItem();
 
@@ -368,17 +394,33 @@ namespace Ants
             {
                 if (adding.Proc != null)
                 {
-                    s.SubItems.Add(adding.Proc.Id.ToString());
-                    s.SubItems.Add(adding.Message);
+                    s = new ListViewItem(adding.Proc.Id.ToString());
+                    
+                    switch(adding.Message)
+                    {
+                        case "percentage_from_start_error":
+                            s.SubItems.Add("Memoria usata superata confrontando a 2 secondi prima");
+                            break;
+                        case "percentage_from_total_ram_error":
+                            s.SubItems.Add("Memoria usata superata confrontando con la memoria totale");
+                            break;
+                        case "IP_address_in_BL":
+                            s.SubItems.Add("Connessione ad IP sconsigliato");
+                            break;
+                        case "Port_in_BL":
+                            s.SubItems.Add("Connessione tramite una Porta sconsigliata");
+                            break;
+                    }
                 }
                 else
                 {
-                    s.SubItems.Add(adding.Message);
+                    s = new ListViewItem(adding.Message);
                     s.SubItems.Add("Digest del file trovato nel database");
                 }
 
 
                 ritorno.Add(s);
+                
                 adding = adding.Next;
             }
             return ritorno;

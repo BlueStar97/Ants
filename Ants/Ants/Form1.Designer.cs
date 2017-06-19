@@ -36,6 +36,8 @@
             this.killdelete = new System.Windows.Forms.Button();
             this.quit = new System.Windows.Forms.Button();
             this.control = new System.Windows.Forms.Button();
+            this.refresh = new System.Windows.Forms.Button();
+            this.reset = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // notifyIcon1
@@ -88,6 +90,7 @@
             this.quit.TabIndex = 2;
             this.quit.Text = "Esci";
             this.quit.UseVisualStyleBackColor = true;
+            this.quit.Click += new System.EventHandler(this.quit_Click);
             // 
             // control
             // 
@@ -99,11 +102,33 @@
             this.control.UseVisualStyleBackColor = true;
             this.control.Click += new System.EventHandler(this.control_Click);
             // 
+            // refresh
+            // 
+            this.refresh.Location = new System.Drawing.Point(370, 87);
+            this.refresh.Name = "refresh";
+            this.refresh.Size = new System.Drawing.Size(103, 29);
+            this.refresh.TabIndex = 4;
+            this.refresh.Text = "Refresh";
+            this.refresh.UseVisualStyleBackColor = true;
+            this.refresh.Click += new System.EventHandler(this.refresh_Click);
+            // 
+            // reset
+            // 
+            this.reset.Location = new System.Drawing.Point(370, 123);
+            this.reset.Name = "reset";
+            this.reset.Size = new System.Drawing.Size(103, 34);
+            this.reset.TabIndex = 5;
+            this.reset.Text = "Resetta i valori impostati";
+            this.reset.UseVisualStyleBackColor = true;
+            this.reset.Click += new System.EventHandler(this.reset_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(485, 367);
+            this.Controls.Add(this.reset);
+            this.Controls.Add(this.refresh);
             this.Controls.Add(this.control);
             this.Controls.Add(this.quit);
             this.Controls.Add(this.killdelete);
@@ -126,6 +151,8 @@
         private System.Windows.Forms.ColumnHeader problem;
         private System.Windows.Forms.Button quit;
         private System.Windows.Forms.Button control;
+        private System.Windows.Forms.Button refresh;
+        private System.Windows.Forms.Button reset;
     }
 }
 
