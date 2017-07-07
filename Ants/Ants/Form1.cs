@@ -14,6 +14,7 @@ namespace Ants
     public partial class Form1 : Form
     {
         String path = "", perpre="", perram="";
+        private String DNS;
         FolderBrowserDialog src = new FolderBrowserDialog();
         Socket receive;
         IPAddress addr;
@@ -30,6 +31,11 @@ namespace Ants
         public Form1()
         {
             InitializeComponent();
+            path = "";
+            perpre = "";
+            perram = "";
+            DNS = "ec2-50-112-187-76.us-west-2.compute.amazonaws.com";
+            src = new FolderBrowserDialog();
             src.Description = "Seleziona la cartella download predefinita:";
             src.RootFolder = Environment.SpecialFolder.MyComputer;
             notifyIcon1.BalloonTipText = "La finestra è stata minimizzata.";
@@ -47,7 +53,7 @@ namespace Ants
 
             try
             {
-                addr = Dns.GetHostAddresses("ec2-34-211-35-47.us-west-2.compute.amazonaws.com")[0];
+                addr = Dns.GetHostAddresses(DNS)[0];
             }
             catch(SocketException e)
             {
